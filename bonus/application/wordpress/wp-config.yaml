@@ -1,0 +1,52 @@
+# application/wordpress/wp-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-config
+data:
+  WORDPRESS_DB_HOST: "wordpress-mysql"
+  WORDPRESS_DB_USER: "wordpress"
+  wp-config.php: |
+    <?php
+    // ** MySQL settings ** //
+    /** The name of the database for WordPress */
+    define('DB_NAME', 'wordpress');
+    
+    /** MySQL database username */
+    define('DB_USER', 'wordpress');
+
+    /** MySQL database password */
+    define('DB_PASSWORD', getenv('WORDPRESS_DB_PASSWORD'));
+    /** MySQL hostname */
+    define('DB_HOST', 'wordpress-mysql');
+    
+    /** Database Charset to use in creating database tables. */
+    define('DB_CHARSET', 'utf8');
+    
+    /** The Database Collate type. Don't change this if in doubt. */
+    define('DB_COLLATE', '');
+
+    /** table prefix */
+    $table_prefix = 'wp_';
+    // ** Authentication Unique Keys and Salts ** //
+    // Generated at https://api.wordpress.org/secret-key/1.1/salt/
+    define('AUTH_KEY',         '8!jl-a$GP=[@1UkeXCcO+yV;:n:>RnFPK6|Qw:Sme8aX_W`u+cCnYm:rJz*E3&:r');
+    define('SECURE_AUTH_KEY',  'i@;@PU]5SU+brchq*GJa#2xVuqV .D(lx^K-)AYvzIg(SK%%rTa}$6N;Pm0c>F10');
+    define('LOGGED_IN_KEY',    'FG2M|fsX,i<!yH004OMB$VJZmgP?b~KIOkbS)&6w-9G9KD;HCeqm+|#!a-+YS )^');
+    define('NONCE_KEY',        '<}(3c7sADI;GZ/-p,2 /=#^#qrrwEWQ$n-b*8}aS)w*BhW#7.>+Ga+buf3j-|-_p');
+    define('AUTH_SALT',        '.r|XgEd]TWTus_4UA0tgUvF|e!psqkk!]<SZw*a48CcTid<y+*j2(jO9SL%!-%=|');
+    define('SECURE_AUTH_SALT', 's-0O:ZnZtK^r*le`Y1UYvDcfNU*=g_-lG3A{]URZXBL-5--@6y_[75:j=DgVpoyM');
+    define('LOGGED_IN_SALT',   '$0|KPUd%o+i~x|&D^s5<1B%00D~/% ?105a0?6P~Ml<6P::NUqHH<$-j}h|{/%/H');
+    define('NONCE_SALT',       'FIJi`/o6r1. ct-Te2hF}:$f}9>WW7(i83=f.C!|ZVi0^?~=hfP;Hyn~Pz=k`/XW');
+    // ** For developers: WordPress debugging mode. ** //
+      define('WP_DEBUG', false);    
+      
+      /** Absolute path to the WordPress directory. */
+      if ( !defined('ABSPATH') )
+      define('ABSPATH', dirname(__FILE__) . '/');
+      
+      /** Sets up WordPress vars and included files. */
+      require_once(ABSPATH . 'wp-settings.php');
+    ?>
+
+    

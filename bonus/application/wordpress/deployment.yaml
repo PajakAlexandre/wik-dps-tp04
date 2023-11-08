@@ -6,13 +6,16 @@ metadata:
   labels:
     app: wordpress
 spec:
-  replicas: 3  # Increase the number of replicas to 3
+  replicas: 4
   selector:
     matchLabels:
       app: wordpress
       tier: frontend
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50% # Add this to keep the service available during the update
+  revisionHistoryLimit: 3  # Add this to keep the last 3 replicas for rollback
   template:
     metadata:
       labels:
@@ -22,23 +25,38 @@ spec:
       containers:
         - image: wordpress:6.2.1-apache
           name: wordpress
+          resources:  # Add resource requests/limits
+            requests:
+              memory: "64Mi"      # Minimum amount of memory the container needs
+              cpu: "250m"         # Minimum amount of CPU the container needs
+            limits:
+              memory: "128Mi"     # Maximum amount of memory the container can use
+              cpu: "500m"         # Maximum amount of CPU the container can use
+          envFrom:  # This will import all variables from the ConfigMap
+            - configMapRef:
+                name: wordpress-config
           env:
-            - name: WORDPRESS_DB_HOST
-              value: wordpress-mysql
-            - name: WORDPRESS_DB_PASSWORD
+            - name: WORDPRESS_DB_PASSWORD  # This remains as it's sensitive and comes from a Secret
               valueFrom:
                 secretKeyRef:
                   name: mysql-pass
                   key: password
-            - name: WORDPRESS_DB_USER
-              value: wordpress
           ports:
             - containerPort: 80
               name: wordpress
           volumeMounts:
             - name: wordpress-persistent-storage
               mountPath: /var/www/html
+            - name: config-volume  # Mount the volume for wp-config.php
+              mountPath: /var/www/html/wp-config.php
+              subPath: wp-config.php  # Specifies the file from ConfigMap to use
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:
             claimName: wordpress-pv-claim
+        - name: config-volume  # Define the ConfigMap volume
+          configMap:
+            name: wordpress-config  # The name of your ConfigMap
+            items:
+              - key: wp-config.php
+                path: wp-config.php
