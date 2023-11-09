@@ -1,0 +1,31 @@
+# wordpress-chart/templates/service.yaml
+# Wordpress service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.wordpress.service.name }}
+spec:
+  selector:
+    app: {{ .Values.wordpress.selector.app }}
+    tier: {{ .Values.wordpress.selector.tier }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.wordpress.service.port }}
+      targetPort: {{ .Values.wordpress.service.targetPort }}
+  type: {{ .Values.wordpress.service.type }}
+
+---
+# mysql service for wordpress
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.mysql.service.name }}
+spec:
+  selector:
+    app: {{ .Values.mysql.selector.app }}
+    tier: {{ .Values.mysql.selector.tier }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.mysql.service.port }}
+      targetPort: {{ .Values.mysql.service.port }}
+  type: {{ .Values.mysql.service.type }}

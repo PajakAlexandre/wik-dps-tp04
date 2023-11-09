@@ -1,0 +1,112 @@
+# wordpress-chart/values.yaml
+
+wordpress:
+  replicaCount: 4
+  appName: wordpress
+  selector:
+    app: wordpress
+    tier: frontend
+  image:
+    repository: wordpress
+    tag: 6.2.1-apache
+    pullPolicy: IfNotPresent
+
+  service:
+    name: wordpress-service
+    type: ClusterIP
+    targetPort: 80
+    port: 80
+
+  ingress:
+    enabled: true
+    name: wordpress-ingress
+    host: wordpress.local
+    path: /
+    pathType: Prefix
+
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
+
+  persistence:
+    enabled: true
+    claimName: wordpress-pv-claim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  configMap:
+    name: wordpress-config
+
+  database:
+    host: wordpress-mysql
+    name: wordpress
+    user: wordpress
+  debug: false
+
+  ports:
+    containerPort: 80
+
+  volumeMounts:
+    - name: wordpress-persistent-storage
+      mountPath: /var/www/html
+    - name: config-volume
+      mountPath: /var/www/html/wp-config.php
+      subPath: wp-config.php
+
+# mysql
+mysql:
+  appName: mysql
+  image:
+    repository: mysql
+    tag: 8.0
+    pullPolicy: IfNotPresent
+
+  selector:
+    app: wordpress
+    tier: mysql
+
+  service:
+    name: wordpress-mysql
+    port: 3306
+    type: ClusterIP
+
+  secret:
+    name: mysql-pass
+    key: password
+
+  configMap:
+    name: mysql-config
+
+  database:
+    name: wordpress
+    user: wordpress
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  persistence:
+    enabled: true
+    claimName: mysql-pv-claim
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  ports:
+    containerPort: 3306
+
+
+  volumeMounts:
+    - name: mysql-persistent-storage
+      mountPath: /var/lib/mysql
+    - name: mysql-pass-volume
+      mountPath: /etc/mysql
+    - name: mysql-config-volume
+      mountPath: /etc/mysql/conf.d

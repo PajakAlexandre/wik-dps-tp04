@@ -1,0 +1,143 @@
+# wordpress-chart/templates/deployment.yaml
+# wordpress-chart/templates/deployment.yaml
+
+# ---------------------------
+# DEPLOYMENT: WordPress
+# ---------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-wordpress
+  labels:
+    app: wordpress
+spec:
+  replicas: {{ .Values.wordpress.replicaCount }}
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+        - name: wordpress
+          image: "{{ .Values.wordpress.image.repository }}:{{ .Values.wordpress.image.tag }}"
+          imagePullPolicy: {{ .Values.wordpress.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.wordpress.ports.containerPort }}
+          resources:
+            requests:
+              memory: "{{ .Values.wordpress.resources.requests.memory }}"
+              cpu: "{{ .Values.wordpress.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.wordpress.resources.limits.memory }}"
+              cpu: "{{ .Values.wordpress.resources.limits.cpu }}"
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.wordpress.configMap.name }}
+          env:
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secret.name }}
+                  key: {{ .Values.mysql.secret.key }}
+          volumeMounts:
+          {{- range .Values.wordpress.volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- if .subPath }}
+              subPath: {{ .subPath }}
+            {{- end }}
+            {{- end }}
+      volumes:
+        - name: wordpress-persistent-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.wordpress.persistence.claimName }}
+        - name: config-volume
+          configMap:
+            name: {{ .Values.wordpress.configMap.name }}
+            items:
+              - key: wp-config.php
+                path: wp-config.php
+
+---
+
+# ---------------------------
+# DEPLOYMENT: MySQL
+# ---------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-mysql
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mysql.ports.containerPort }}
+          resources:
+            requests:
+              memory: "{{ .Values.mysql.resources.requests.memory }}"
+              cpu: "{{ .Values.mysql.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.mysql.resources.limits.memory }}"
+              cpu: "{{ .Values.mysql.resources.limits.cpu }}"
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secret.name }}
+                  key: {{ .Values.mysql.secret.key }}
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.mysql.configMap.name }}
+                  key: database-name
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.mysql.configMap.name }}
+                  key: database-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secret.name }}
+                  key: {{ .Values.mysql.secret.key }}
+          volumeMounts:
+          {{- range .Values.mysql.volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.mysql.persistence.claimName }}
+        - name: mysql-pass-volume
+          secret:
+            secretName: {{ .Values.mysql.secret.name }}
+        - name: mysql-config-volume
+          configMap:
+            name: {{ .Values.mysql.configMap.name }}

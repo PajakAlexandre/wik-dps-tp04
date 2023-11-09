@@ -1,0 +1,30 @@
+# wordpress-chart/templates/pvc.yaml
+
+# wordpress pvc
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.wordpress.persistence.claimName }}
+  labels:
+    app: {{ .Values.wordpress.appName }}
+spec:
+  accessModes:
+    - {{ .Values.wordpress.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.wordpress.persistence.size }}
+
+---
+# mysql pvc
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mysql.persistence.claimName }}
+  labels:
+    app: {{ .Values.mysql.appName }}
+spec:
+  accessModes:
+    - {{ .Values.mysql.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.mysql.persistence.size }}
