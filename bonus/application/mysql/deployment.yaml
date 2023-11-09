@@ -28,9 +28,15 @@ spec:
                   name: mysql-pass
                   key: password
             - name: MYSQL_DATABASE
-              value: wordpress
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-config
+                  key: database-name
             - name: MYSQL_USER
-              value: wordpress
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-config
+                  key: database-user
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -46,6 +52,13 @@ spec:
               mountPath: /etc/mysql
             - name: mysql-config-volume
               mountPath: /etc/mysql/conf.d
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
 
       volumes:
         - name: mysql-persistent-storage

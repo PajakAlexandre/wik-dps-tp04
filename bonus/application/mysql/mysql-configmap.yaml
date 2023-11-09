@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: mysql-config
 data:
+  database-name: "wordpress"
+  database-user: "wordpress"
   my.cnf: |
     [mysqld]
     datadir=/var/lib/mysql
