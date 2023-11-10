@@ -267,4 +267,12 @@ Handling connection for 8080
     {"host":"rust-api.local","x-request-id":"295584ceced35982d70fd608326b5730","x-real-ip":"192.168.49.1","x-forwarded-for":"192.168.49.1","x-forwarded-host":"rust-api.local","x-forwarded-port":"80","x-forwarded-proto":"http","x-forwarded-scheme":"http","x-scheme":"http","user-agent":"curl/7.81.0","accept":"*/*"}
     ```
 
+# Bonus
 
+## part 1 - 3 tier architecture Wordpress Kubernetes deployment
+
+[Wordpress kube](./bonus/application)
+
+## part 2 - Helm chart for Wordpress
+
+[Wordpress helm chart](./bonus/wordpress-chart)
